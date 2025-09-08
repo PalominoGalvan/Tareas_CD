@@ -1,4 +1,9 @@
-# Tareas de Introducción a la Ciencia de Datos
-**Luis Erick Palomino Galván**
-Licenciatura en Computación Matemática
-Repositorio para las tareas en equipo de Introducción a Ciencia de Datos con Aquino
+<div align="center">
+
+<h1 style="font-size:28px;">Cálculo Diferencial e Integral III</h1>
+
+<p><b>Luis Erick Palomino Galván</b> &nbsp;&nbsp;|&nbsp;&nbsp; Licenciatura en Computación Matemática</p>
+
+<hr>
+
+</div>
