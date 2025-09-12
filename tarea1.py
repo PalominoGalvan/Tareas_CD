@@ -8,7 +8,7 @@
 
 # Directorio de trabajo (cambialo al tuyo)
 from os import chdir
-chdir("C:/Users/Rubi/Documents/Intro_Ciencia_Datos/tarea1")
+chdir("C:/Users/Rubi/Documents/Intro_Ciencia_Datos/tarea1/final")
    
 # Cargar pandas
 import pandas as pd
@@ -49,12 +49,12 @@ df_t = df.set_index("Site Code").T
 
 # Reiniciamos el índice para que las etiquetas de muestra (BRO, CAV, CAZ, etc)
 # no queden como índice, sino como una columna llamada "Sample".
-df_t = df_t.reset_index().rename(columns={"index": "Sample"})
+#df_t = df_t.reset_index().rename(columns={"index": "Sample"})
 
 print(df_t.head(25))
 
 # Quitamos las primeras 10 columnas corresponden a características que en este momento no vamos a usar
-df_t = df_t.drop(columns=['Site  name','Sample', 'Country', 'Latitude', 'Longitude', 'Species', 
+df_t = df_t.drop(columns=['Site  name', 'Country', 'Latitude', 'Longitude', 'Species', 
                           'First year CE', 'Last year CE', 'elevation a.s.l.', 'Year CE'])
 
 
@@ -62,3 +62,14 @@ df_t = df_t.drop(columns=['Site  name','Sample', 'Country', 'Latitude', 'Longitu
 # Imprimimos los nombres de las columnas que nos quedan para confirmar la limpieza.
 print(df_t.head())
 print(df_t.columns)
+
+# ================ Exploración inicial de datos ===============
+
+# Valores faltantes por fila
+print('Numero de datos faltantes por sitio')
+print(df_t.isna().sum(axis = 1))
+
+# porcentaje
+# 2005 - 1600 + 1 = 406años -- 100%
+print('Porcentaje de datos faltantes por sitio')
+print(df_t.isna().sum(axis = 1) * 100/406)
