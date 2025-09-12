@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  Tarea 1 - Intro Ciencia de Datos
     Jessica Rubí Lara Rosales  
