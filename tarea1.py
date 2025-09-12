@@ -39,3 +39,8 @@ print(df.head(11))
 # Quitamos las primeras 10 columnas corresponden a características que en este momento no vamos a usar
 df_n = df.drop(range(9))
 print(df_n.head(25))
+
+
+# FORMA 2
+# Transponemos el DataFrame: usando como pivotal 'Site Code' 
+df_t = df.set_index("Site Code").T
