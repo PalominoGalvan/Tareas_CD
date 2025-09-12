@@ -32,3 +32,10 @@ df = pd.read_csv(file_path)
 # Quitamos los primeros tres renglones porque no hay datos ahí
 df = pd.read_csv(file_path,skiprows=3)
 print(df.head(11))
+
+# Maneras de trabajar los datos
+
+# FORMA 1 
+# Quitamos las primeras 10 columnas corresponden a características que en este momento no vamos a usar
+df_n = df.drop(range(9))
+print(df_n.head(25))
