@@ -44,3 +44,9 @@ print(df_n.head(25))
 # FORMA 2
 # Transponemos el DataFrame: usando como pivotal 'Site Code' 
 df_t = df.set_index("Site Code").T
+
+# Reiniciamos el índice para que las etiquetas de muestra (BRO, CAV, CAZ, etc)
+# no queden como índice, sino como una columna llamada "Sample".
+df_t = df_t.reset_index().rename(columns={"index": "Sample"})
+
+print(df_t.head(25))
