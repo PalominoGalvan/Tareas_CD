@@ -28,3 +28,7 @@ file_path = "./data.csv"
 # Leemos el archivo CSV con pandas. 
 df = pd.read_csv(file_path)
 #print(df.head())
+
+# Quitamos los primeros tres renglones porque no hay datos ahí
+df = pd.read_csv(file_path,skiprows=3)
+print(df.head(11))
