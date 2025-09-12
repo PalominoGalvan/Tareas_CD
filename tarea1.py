@@ -50,3 +50,13 @@ df_t = df.set_index("Site Code").T
 df_t = df_t.reset_index().rename(columns={"index": "Sample"})
 
 print(df_t.head(25))
+
+# Quitamos las primeras 10 columnas corresponden a características que en este momento no vamos a usar
+df_t = df_t.drop(columns=['Site  name','Sample', 'Country', 'Latitude', 'Longitude', 'Species', 
+                          'First year CE', 'Last year CE', 'elevation a.s.l.', 'Year CE'])
+
+
+
+# Imprimimos los nombres de las columnas que nos quedan para confirmar la limpieza.
+print(df_t.head())
+print(df_t.columns)
