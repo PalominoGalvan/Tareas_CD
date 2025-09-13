@@ -280,39 +280,35 @@ for columna in df_n.columns:
     plt.scatter(x[outliers], y[outliers], facecolors="none", edgecolors="r", s=100, label="Posible outlier")
 
 
-
 # ================== Normalización Z-score ==================
 df_zscore = (df_data - df_data.mean()) / df_data.std()
-
-print("\nPrimeras filas normalizadas (Z-score):")
-print(df_zscore.head())
-
 
 # ================== Normalización Min-Max ==================
 df_minmax = (df_data - df_data.min()) / (df_data.max() - df_data.min())
 
-print("\nPrimeras filas normalizadas (Min-Max):")
-print(df_minmax.head())
+# ================== Visualización para cada sitio ==================
 
-# ================== Visualización ==================
+for sitio in sitios_interes:
+    if sitio not in df_data.columns:
+        print(f"Advertencia: el sitio '{sitio}' no se encuentra en los datos.")
+        continue
 
+    fig, ax = plt.subplots(figsize=(6, 4))
 
+    ax.plot(df_data.index, df_data[sitio], label="Original", color="blue", linewidth=1)
+    ax.plot(df_zscore.index, df_zscore[sitio], label="Z-score", color="red", linestyle="--")
+    ax.plot(df_minmax.index, df_minmax[sitio], label="Min-Max", color="green", linestyle=":")
 
-sitio = "BRO"
+    ax.set_title(f"Normalización de δ¹³C - Sitio: {sitio}")
+    ax.set_xlabel("Año")
+    ax.set_ylabel("δ¹³C / Normalizado")
+    ax.legend()
+    ax.grid(True)
 
-fig, ax = plt.subplots(figsize=(5, 5))
-ax.plot(df_data.index, df_data[sitio], label="Original", color="blue")
-ax.plot(df_zscore.index, df_zscore[sitio], label="Z-score", color="red")
-ax.plot(df_minmax.index, df_minmax[sitio], label="Min-Max", color="green")
+    # Ticks del eje X cada 100 años
+    ax.xaxis.set_major_locator(MultipleLocator(100))
 
-ax.set_title(f"Comparación de normalizaciones para {sitio}")
-ax.set_xlabel("Año")
-ax.set_ylabel("Valor")
-ax.legend()
-
-# Tick del eje X cada 100 años
-ax.xaxis.set_major_locator(MultipleLocator(100))
-
-plt.show()
+    plt.tight_layout()
+    plt.show()
 
 
