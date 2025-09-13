@@ -9,12 +9,15 @@
 # Directorio de trabajo (cambialo al tuyo)
 from os import chdir
 chdir("C:/Users/Rubi/Documents/Intro_Ciencia_Datos/tarea1/entregable")
-   
-# Cargar pandas
+
+#cargar paquetes
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+import plotly.express as px
+from matplotlib.widgets import Slider
+from matplotlib.ticker import MultipleLocator
 
 # Configuracion inicial
 pd.set_option("display.max_columns", None)  # Mostrar todas las columnas
@@ -275,5 +278,41 @@ for columna in df_n.columns:
     # Resaltar puntos con leverage alto
     outliers = leverages > threshold
     plt.scatter(x[outliers], y[outliers], facecolors="none", edgecolors="r", s=100, label="Posible outlier")
+
+
+
+# ================== Normalización Z-score ==================
+df_zscore = (df_data - df_data.mean()) / df_data.std()
+
+print("\nPrimeras filas normalizadas (Z-score):")
+print(df_zscore.head())
+
+
+# ================== Normalización Min-Max ==================
+df_minmax = (df_data - df_data.min()) / (df_data.max() - df_data.min())
+
+print("\nPrimeras filas normalizadas (Min-Max):")
+print(df_minmax.head())
+
+# ================== Visualización ==================
+
+
+
+sitio = "BRO"
+
+fig, ax = plt.subplots(figsize=(5, 5))
+ax.plot(df_data.index, df_data[sitio], label="Original", color="blue")
+ax.plot(df_zscore.index, df_zscore[sitio], label="Z-score", color="red")
+ax.plot(df_minmax.index, df_minmax[sitio], label="Min-Max", color="green")
+
+ax.set_title(f"Comparación de normalizaciones para {sitio}")
+ax.set_xlabel("Año")
+ax.set_ylabel("Valor")
+ax.legend()
+
+# Tick del eje X cada 100 años
+ax.xaxis.set_major_locator(MultipleLocator(100))
+
+plt.show()
 
 
