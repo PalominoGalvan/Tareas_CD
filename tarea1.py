@@ -8,7 +8,7 @@
 
 # Directorio de trabajo (cambialo al tuyo)
 from os import chdir
-chdir("C:/Users/Rubi/Documents/Intro_Ciencia_Datos/tarea1/entregable")
+chdir("/home/erick-palomino/Introducción a Ciencia de Datos")
 
 #cargar paquetes
 import pandas as pd
@@ -26,7 +26,7 @@ pd.set_option("display.width", None)        # Ajuste automático al ancho de la 
 pd.set_option("display.max_colwidth", None) # No truncar el contenido de celdas
 
 # Cargamos archivo
-file_path = "./data.csv" 
+file_path = "data.csv" 
 
 
 # Leemos el archivo CSV con pandas. 
@@ -144,6 +144,77 @@ for sitio in missing_percent.index:
 # ===================== Exploración gráfica =====================
 # ===============================================================
 
+
+# ---------------------------------------------------------
+# Regresion lineal para dectección de posibles outliers
+# ---------------------------------------------------------
+
+for columna in df_n.columns:
+    
+    #transformamos los indices de la fila en una nueva columna
+    df_sub = df_n.reset_index().rename(columns={"index": "Sample"})
+    #eliminamos todas las filas donde haya NaN
+    df_sub = df_sub[['Site Code', columna]].dropna()
+    
+    
+    # Seleccionamos los años (Site Code) como X y los datos de carbono 13 (columna) como Y
+    # Antes de usar x e y
+    df_sub[columna] = pd.to_numeric(df_sub[columna].astype(str).str.replace(",", "."), errors='coerce')
+    df_sub = df_sub.dropna(subset=[columna, 'Site Code'])
+    x = df_sub['Site Code'].to_numpy(dtype=float)
+    y = df_sub[columna].to_numpy(dtype=float)
+
+
+    # Añadir intercepto, el vector de unos de la regresion lineal
+    X1 = np.column_stack([np.ones(x.shape[0]), x])
+    
+    # Calcular beta con mínimos cuadrados
+    beta_hat, *_ = np.linalg.lstsq(X1, y, rcond=None)
+    
+    # Calcular matriz hat H
+    H = X1 @ np.linalg.inv(X1.T @ X1) @ X1.T
+    leverages = np.diag(H)
+    
+    # Regla práctica de corte
+    n, p = X1.shape
+    threshold = 2*p/n
+    
+    # Cisualización
+    plt.figure(figsize=(8,5))
+    plt.scatter(x, y, c="blue", alpha=0.6)
+    plt.plot(x, X1 @ beta_hat, c="red")
+    plt.title(columna)
+    
+    # Resaltar puntos con leverage alto
+    outliers = leverages > threshold
+    plt.scatter(x[outliers], y[outliers], facecolors="none", edgecolors="r", s=100, label="Posible outlier")
+
+
+### CASO ESPECIAL POR LECTURA
+
+# Reemplazar coma decimal -> punto decimal SOLO en los datos
+df.iloc[1:, 1:] = df.iloc[1:, 1:].replace(",", ".", regex=True)
+
+# ===================== Limpieza =====================
+
+# Los metadatos son las primeras ~9 filas: 'Site name', 'Country', 'Latitude', etc.
+metadata = df.iloc[:9].set_index("Site Code")
+print("\nMetadata de los sitios:")
+print(metadata)
+
+# Los datos de series temporales empiezan a partir de 'Year CE'
+df_data = df.iloc[9:].set_index("Site Code")
+df_data.index.name = "Year"
+
+# Limpiar nombres de columnas (quitar espacios y puntos)
+df_data.columns = df_data.columns.str.strip().str.replace(".", "", regex=False)
+
+# Convertimos valores a float
+df_data = df_data.apply(pd.to_numeric, errors="coerce")
+
+print("\nColumnas disponibles:")
+print(df_data.columns.tolist())
+
 # ---------------------------------------------------------
 # Grafica iterativa
 # ---------------------------------------------------------
@@ -224,6 +295,48 @@ for i, col in enumerate(sitios_interes):
 plt.tight_layout()
 plt.show()
 
+# ================== General ==================
+
+plt.figure(figsize=(12, 6))
+for sitio in sitios_interes:
+    plt.plot(df_data.index, df_data[sitio], label=sitio, linewidth=1)
+plt.title("Evolución ð13C a lo largo del tiempo para un subconjunto de site code")
+plt.xlabel("Año")
+plt.ylabel("Z-score δ¹³C")
+plt.legend(ncol=3, fontsize=8)  # Ajusta columnas y tamaño de leyenda si hay muchos sitios
+plt.grid(True)
+plt.gca().xaxis.set_major_locator(MultipleLocator(100))
+plt.tight_layout()
+plt.show()
+
+# ================== Gráfica Z-score ==================
+df_zscore = (df_data - df_data.mean()) / df_data.std()
+plt.figure(figsize=(10, 6))
+for sitio in sitios_interes:
+    plt.plot(df_zscore.index, df_zscore[sitio], label=sitio, linewidth=1)
+plt.title("Todos los sitios - Normalización Z-score")
+plt.xlabel("Año")
+plt.ylabel("Z-score δ¹³C")
+plt.legend(ncol=3, fontsize=8)  # Ajusta columnas y tamaño de leyenda si hay muchos sitios
+plt.grid(True)
+plt.gca().xaxis.set_major_locator(MultipleLocator(100))
+plt.tight_layout()
+plt.show()
+
+# ================== Gráfica Min-Max ==================
+df_minmax = (df_data - df_data.min()) / (df_data.max() - df_data.min())
+plt.figure(figsize=(12, 6))
+for sitio in sitios_interes:
+    plt.plot(df_minmax.index, df_minmax[sitio], label=sitio, linewidth=1)
+plt.title("Todos los sitios - Normalización Min-Max")
+plt.xlabel("Año")
+plt.ylabel("Min-Max δ¹³C")
+plt.legend(ncol=4, fontsize=8)
+plt.grid(True)
+plt.gca().xaxis.set_major_locator(MultipleLocator(100))
+plt.tight_layout()
+plt.show()
+
 
 # ---------------------------------------------------------
 # Heatmap de datos faltantes
@@ -237,78 +350,3 @@ plt.ylabel('Año')
 plt.title('Mapa de calor de valores faltantes (NaN)')
 plt.tight_layout()
 plt.show()
-
-
-# ---------------------------------------------------------
-# Regresion lineal para dectección de posibles outliers
-# ---------------------------------------------------------
-
-for columna in df_n.columns:
-    
-    #transformamos los indices de la fila en una nueva columna
-    df_sub = df_n.reset_index().rename(columns={"index": "Sample"})
-    #eliminamos todas las filas donde haya NaN
-    df_sub = df_sub[['Site Code', columna]].dropna()
-    
-    
-    # Seleccionamos los años (Site Code) como X y los datos de carbono 13 (columna) como Y
-    x = df_sub['Site Code'].to_numpy(dtype=float)
-    y = df_sub[columna].to_numpy(dtype=float)
-    
-    # Añadir intercepto, el vector de unos de la regresion lineal
-    X1 = np.column_stack([np.ones(x.shape[0]), x])
-    
-    # Calcular beta con mínimos cuadrados
-    beta_hat, *_ = np.linalg.lstsq(X1, y, rcond=None)
-    
-    # Calcular matriz hat H
-    H = X1 @ np.linalg.inv(X1.T @ X1) @ X1.T
-    leverages = np.diag(H)
-    
-    # Regla práctica de corte
-    n, p = X1.shape
-    threshold = 2*p/n
-    
-    # Cisualización
-    plt.figure(figsize=(8,5))
-    plt.scatter(x, y, c="blue", alpha=0.6)
-    plt.plot(x, X1 @ beta_hat, c="red")
-    plt.title(columna)
-    
-    # Resaltar puntos con leverage alto
-    outliers = leverages > threshold
-    plt.scatter(x[outliers], y[outliers], facecolors="none", edgecolors="r", s=100, label="Posible outlier")
-
-
-# ================== Normalización Z-score ==================
-df_zscore = (df_data - df_data.mean()) / df_data.std()
-
-# ================== Normalización Min-Max ==================
-df_minmax = (df_data - df_data.min()) / (df_data.max() - df_data.min())
-
-# ================== Visualización para cada sitio ==================
-
-for sitio in sitios_interes:
-    if sitio not in df_data.columns:
-        print(f"Advertencia: el sitio '{sitio}' no se encuentra en los datos.")
-        continue
-
-    fig, ax = plt.subplots(figsize=(6, 4))
-
-    ax.plot(df_data.index, df_data[sitio], label="Original", color="blue", linewidth=1)
-    ax.plot(df_zscore.index, df_zscore[sitio], label="Z-score", color="red", linestyle="--")
-    ax.plot(df_minmax.index, df_minmax[sitio], label="Min-Max", color="green", linestyle=":")
-
-    ax.set_title(f"Normalización de δ¹³C - Sitio: {sitio}")
-    ax.set_xlabel("Año")
-    ax.set_ylabel("δ¹³C / Normalizado")
-    ax.legend()
-    ax.grid(True)
-
-    # Ticks del eje X cada 100 años
-    ax.xaxis.set_major_locator(MultipleLocator(100))
-
-    plt.tight_layout()
-    plt.show()
-
-
