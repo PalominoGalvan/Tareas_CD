@@ -236,3 +236,44 @@ plt.tight_layout()
 plt.show()
 
 
+# ---------------------------------------------------------
+# Regresion lineal para dectección de posibles outliers
+# ---------------------------------------------------------
+
+for columna in df_n.columns:
+    
+    #transformamos los indices de la fila en una nueva columna
+    df_sub = df_n.reset_index().rename(columns={"index": "Sample"})
+    #eliminamos todas las filas donde haya NaN
+    df_sub = df_sub[['Site Code', columna]].dropna()
+    
+    
+    # Seleccionamos los años (Site Code) como X y los datos de carbono 13 (columna) como Y
+    x = df_sub['Site Code'].to_numpy(dtype=float)
+    y = df_sub[columna].to_numpy(dtype=float)
+    
+    # Añadir intercepto, el vector de unos de la regresion lineal
+    X1 = np.column_stack([np.ones(x.shape[0]), x])
+    
+    # Calcular beta con mínimos cuadrados
+    beta_hat, *_ = np.linalg.lstsq(X1, y, rcond=None)
+    
+    # Calcular matriz hat H
+    H = X1 @ np.linalg.inv(X1.T @ X1) @ X1.T
+    leverages = np.diag(H)
+    
+    # Regla práctica de corte
+    n, p = X1.shape
+    threshold = 2*p/n
+    
+    # Cisualización
+    plt.figure(figsize=(8,5))
+    plt.scatter(x, y, c="blue", alpha=0.6)
+    plt.plot(x, X1 @ beta_hat, c="red")
+    plt.title(columna)
+    
+    # Resaltar puntos con leverage alto
+    outliers = leverages > threshold
+    plt.scatter(x[outliers], y[outliers], facecolors="none", edgecolors="r", s=100, label="Posible outlier")
+
+
