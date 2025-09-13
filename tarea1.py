@@ -137,18 +137,95 @@ for sitio in missing_percent.index:
 
 
 
-# Boxplots 
-# Convertimos todas las columnas a numéricas
-plt.figure(figsize=(15,6))
-plt.xticks(rotation=90)
-plt.ylabel('13CVDB')
-plt.title('Boxplot por sitio')
-df_n = df_n.apply(pd.to_numeric, errors = 'coerce')
+# ===============================================================
+# ===================== Exploración gráfica =====================
+# ===============================================================
 
-df_n.boxplot()
+# ---------------------------------------------------------
+# Grafica iterativa
+# ---------------------------------------------------------
+
+# Convertimos índice a numérico
+df_data.index = pd.to_numeric(df_data.index, errors="coerce")
+
+# Eliminamos filas con índice NaN
+df_data = df_data[~df_data.index.isna()]
+
+# Convertimos a entero
+df_data.index = df_data.index.astype(int)
 
 
+
+# Seleccionemos algunos sitios para graficar
+sitios_interes = ["BRO", "CAV", "CAZ", "COL", "DRA", "FON", "GUT" ,"ILO",
+                  "INA" ,"AHI","LAI" ,"LIL","LOC" ,"NIE1","NIE2","PAN" ,
+                  "PED" ,"POE" ,"REN" ,"SER","SUW" ,"VIG" ,"VIN" ,"WIN","WOB" 
+]
+
+# Filtramos solo esos sitios
+df_sel = df_data[sitios_interes]
+
+# Año inicial
+year0 = 1600
+
+fig, ax = plt.subplots(figsize=(14,8))
+plt.subplots_adjust(bottom=0.25)
+
+bars = ax.bar(df_sel.columns, df_sel.loc[year0])
+ax.set_ylim(df_sel.min().min(), df_sel.max().max())
+ax.set_ylabel("δ13C (‰)")
+ax.set_title(f"Año: {year0}")
+
+# Eje para slider
+ax_slider = plt.axes([0.2, 0.1, 0.6, 0.03])
+slider = Slider(ax_slider, "Año", 1600, 2005, valinit=year0, valstep=1)
+
+# Función que actualiza barras
+def update(val):
+    year = int(slider.val)
+    for bar, h in zip(bars, df_sel.loc[year]):
+        bar.set_height(h)
+    ax.set_title(f"Año: {year}")
+    fig.canvas.draw_idle()
+
+slider.on_changed(update)
+
+plt.show()
+
+# ---------------------------------------------------------
+# Histogramas, densidades y boxplots para imputaciones
+# ---------------------------------------------------------
+
+fig, axes = plt.subplots(3, len(sitios_interes), figsize=(20, 10))
+# Ejes organizados por filas: [0] Histogramas, [1] Densidades, [2] Boxplots
+
+for i, col in enumerate(sitios_interes):
+    if col not in df_data.columns:
+        print(f"Advertencia: El sitio '{col}' no está en los datos.")
+        continue
+
+    col_data = df_data[col].dropna()
+
+    # Histograma
+    sns.histplot(col_data, ax=axes[0, i], kde=False, color="skyblue")
+    axes[0, i].set_title(f"Histograma: {col}")
+    
+    # Densidad (KDE)
+    sns.kdeplot(col_data, ax=axes[1, i], fill=True, color="orange")
+    axes[1, i].set_title(f"Densidad: {col}")
+
+    # Boxplot
+    sns.boxplot(y=col_data, ax=axes[2, i], color="lightgreen")
+    axes[2, i].set_title(f"Boxplot: {col}")
+
+plt.tight_layout()
+plt.show()
+
+
+# ---------------------------------------------------------
 # Heatmap de datos faltantes
+# ---------------------------------------------------------
+
 plt.figure(figsize=(12, 6))
 sns.heatmap(df_n)
 plt.xticks(rotation=90)
