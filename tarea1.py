@@ -179,15 +179,42 @@ for columna in df_n.columns:
     n, p = X1.shape
     threshold = 2*p/n
     
-    # Cisualización
+    # Visualización
     plt.figure(figsize=(8,5))
     plt.scatter(x, y, c="blue", alpha=0.6)
     plt.plot(x, X1 @ beta_hat, c="red")
+    plt.xlabel("Años")
+    plt.ylabel("δ13C")
     plt.title(columna)
     
     # Resaltar puntos con leverage alto
     outliers = leverages > threshold
     plt.scatter(x[outliers], y[outliers], facecolors="none", edgecolors="r", s=100, label="Posible outlier")
+
+    #Ajustados
+    y_fitted = X1 @ beta_hat
+
+    #Residuales
+    residuals = y - y_fitted
+
+    #Desviación estandar de los residuales
+    std_residuals = np.std(residuals)
+
+    #Residuales estandarizados
+    standardized_residuals = residuals / std_residuals
+
+    #Barreras para detectar posibles outliers
+    plt.figure(figsize=(10, 6))
+    plt.scatter(y_fitted, standardized_residuals, c="purple", alpha=0.6)
+    plt.axhline(y=0, color='red', linestyle='-', linewidth=2)
+    plt.axhline(y=2, color='green', linestyle=':', linewidth=2, label='Sospechoso de ser outlier')
+    plt.axhline(y=-2, color='green', linestyle=':', linewidth=2)
+    plt.axhline(y=3, color='blue', linestyle=':', linewidth=2, label='Altamente probable de ser outlier')
+    plt.axhline(y=-3, color='blue', linestyle=':', linewidth=2)
+    plt.xlabel("Valores Ajustados")
+    plt.ylabel("Residuos Estandarizados")
+    plt.title(f"Residuos Estandarizados vs. Valores Ajustados {columna}")
+    plt.legend()
 
 
 ### CASO ESPECIAL POR LECTURA
