@@ -8,7 +8,7 @@
 
 # Directorio de trabajo (cambialo al tuyo)
 from os import chdir
-chdir("C:/Users/Rubi/Documents/Intro_Ciencia_Datos/tarea1/final")
+chdir("C:/Users/Rubi/Documents/Intro_Ciencia_Datos/tarea1/entregable")
    
 # Cargar pandas
 import pandas as pd
@@ -134,3 +134,28 @@ count = pd.Series(count)
 
 for sitio in missing_percent.index:
     print(f"{sitio}: {missing_percent[sitio]:.2f}% faltantes, con {count[sitio]} datos")
+
+
+
+# Boxplots 
+# Convertimos todas las columnas a numéricas
+plt.figure(figsize=(15,6))
+plt.xticks(rotation=90)
+plt.ylabel('13CVDB')
+plt.title('Boxplot por sitio')
+df_n = df_n.apply(pd.to_numeric, errors = 'coerce')
+
+df_n.boxplot()
+
+
+# Heatmap de datos faltantes
+plt.figure(figsize=(12, 6))
+sns.heatmap(df_n)
+plt.xticks(rotation=90)
+plt.xlabel('Sitios')
+plt.ylabel('Año')
+plt.title('Mapa de calor de valores faltantes (NaN)')
+plt.tight_layout()
+plt.show()
+
+
